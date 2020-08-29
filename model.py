@@ -1,7 +1,9 @@
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import KFold 
 from sklearn.model_selection import GridSearchCV,StratifiedKFold
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import mean_squared_error
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
@@ -10,7 +12,7 @@ from sklearn.neural_network import MLPClassifier
 # import xgboost as xgb
 
 
-
+#function to do fit our models and perform k-fold cross validation
 def modelKfold(model, x,y,X_train):
     logReg=LogisticRegression()
     mlp=MLPClassifier()
@@ -27,6 +29,18 @@ def modelKfold(model, x,y,X_train):
 
         scores.append(accuracy_score(cvy_test,ypred))
     return modelTrained, scores
+
+#function to make our predictions
+def predictor(model,X_test,y_test):
+    y_pred=model.predict(X_test)
+    df_pr=pd.DataFrame({'actual':y_test.values.flatten(),'predicted':y_pred.flatten()})
+    return df_pr['predicted'].value_counts()
+
+#function to evaluate our models
+def evaluate_model(metric,model,X_test,y_test):
+    y_pred=model.predict(X_test)
+    evaluation=metric(y_test, y_pred)
+    return evaluation
 
 def strKfold(model,X,y,X_test):
     
@@ -49,12 +63,5 @@ def strKfold(model,X,y,X_test):
         pred_test=model.predict_proba(X_test)[:,1]
         pred_test_full +=pred_test
         i+=1
-
-        # mlp.fit(xtr,ytr)
-        # score = roc_auc_score(yvl,lr.predict(xvl))
-        # print('ROC AUC score:',score)
-        # cv_score.append(score)    
-        # pred_test = lr.predict_proba(X_test)[:,1]
-        # pred_test_full +=pred_test
-        # i+=1
     return cv_score,modelTrained1
+
